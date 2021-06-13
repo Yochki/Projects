@@ -1,61 +1,62 @@
 package OXgame;
 
-import javax.swing.JPanel;
-
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
-class OXPanel extends JPanel {
+import javax.swing.JPanel;
+
+public class OXPanel extends JPanel {
 
 	private boolean xOnTurn = true;
 
 	private static int noWin = 0;
 	private static int horizontalWin = 1;
 	private static int verticalWin = 2;
-	private static int leftInclinedWin = 3;
-	private static int rightInclinedWin = 4;
+	private static int leftWin = 3;
+	private static int rightWin = 4;
 
 	private int winningCombination = noWin;
 	private int winningI = -1;
 	private int winningJ = -1;
 
-	private char[][] board = { { ' ', ' ', ' ' }, { ' ', ' ', ' ' }, { ' ', ' ', ' ' } };
+	private char[][] board = { { ' ', ' ', ' ' }, { ' ', ' ', ' ' }, { ' ', ' ', ' ' }, };
 
 	double boardMarginRatio = 0.1;
 	double elementMarginRatio = 0.2;
 	int upBoardBorder;
 	int downBoardBorder;
-	int leftBoardBorder;
 	int rightBoardBorder;
-	int squareWidth;
+	int leftBoardBorder;
 	int squareHeight;
+	int squareWidth;
 
 	public OXPanel() {
-		super.addMouseListener(new MouseListener() {
+
+		addMouseListener(new MouseListener() {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-            // TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-            // TODO Auto-generated method stub
 
 				if (winningCombination != noWin) {
 					return;
 				}
-
+				
 				int x = e.getX();
 				int y = e.getY();
-				System.out.print(x + " " + y);
+
 				for (int i = 0; i < 3; i++) {
 					for (int j = 0; j < 3; j++) {
 						if (board[i][j] == ' ' && x > leftBorder(j) && x < rightBorder(j) && y < downBorder(i)
 								&& y > upBorder(i)) {
 							board[i][j] = xOnTurn ? 'x' : 'o';
+
 							winningCombination = checkForWinner(i, j);
 
 							if (winningCombination > noWin) {
@@ -68,59 +69,76 @@ class OXPanel extends JPanel {
 						}
 					}
 				}
+
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-            // TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-            // TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-            // TODO Auto-generated method stub
 
 			}
 		});
 	}
 
 	private int checkForWinner(int i, int j) {
+
 		if (board[i][0] == board[i][1] && board[i][0] == board[i][2]) {
 			return horizontalWin;
 		} else if (board[0][j] == board[1][j] && board[0][j] == board[2][j]) {
 			return verticalWin;
 		} else if (i == j && board[0][0] == board[1][1] && board[0][0] == board[2][2]) {
-			return leftInclinedWin;
+			return leftWin;
 		} else if (i + j == 2 && board[0][2] == board[1][1] && board[0][2] == board[2][0]) {
-			return rightInclinedWin;
+			return rightWin;
 		} else {
 			return noWin;
 		}
+
 	}
 
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		drawBoard(g);
-
-		if (winningCombination != noWin) {
+		if (winningCombination > noWin) {
 			drawWinner(g);
 		}
-
 	}
 
 	private void drawWinner(Graphics g) {
+
 		Color color = new Color(255, 1, 1, 100);
 		g.setColor(color);
+
+		if (winningCombination == horizontalWin) {
+			g.drawLine(leftBorder(0), upBorder(winningI) + squareHeight / 2, rightBorder(2),
+					upBorder(winningI) + squareHeight / 2);
+
+		} else if (winningCombination == verticalWin) {
+			g.drawLine(leftBorder(winningJ) + squareWidth / 2, upBorder(0), leftBorder(winningJ) + squareWidth / 2,
+					downBorder(2));
+
+		} else if (winningCombination == leftWin) {
+			g.drawLine(leftBorder(0), upBorder(0), rightBorder(2), downBorder(2));
+			
+		} else if (winningCombination == rightWin) {
+
+			g.drawLine(rightBorder(2), upBorder(0), leftBorder(0), downBorder(2));
+		}
+		g.setColor(Color.BLACK);
 	}
 
 	private void drawBoard(Graphics g) {
+
 		upBoardBorder = (int) (boardMarginRatio * getHeight());
 		downBoardBorder = (int) (getHeight() - boardMarginRatio * getHeight());
 		leftBoardBorder = (int) (boardMarginRatio * getWidth());
@@ -128,18 +146,14 @@ class OXPanel extends JPanel {
 		squareWidth = (int) ((getWidth() - 2 * boardMarginRatio * getWidth()) / 3);
 		squareHeight = (int) ((getHeight() - 2 * boardMarginRatio * getHeight()) / 3);
 
-// empty board
-		for (int i = 1; i < 3; i++) {
-//horizontal lines
-			g.drawLine(leftBoardBorder, upBorder(i), rightBoardBorder, upBorder(i));
-//vertical lines
-			g.drawLine(leftBorder(i), upBoardBorder, leftBorder(i), downBoardBorder);
+		for (int k = 1; k < 3; k++) {
+			g.drawLine(leftBoardBorder, upBorder(k), rightBoardBorder, upBorder(k));
+			g.drawLine(leftBorder(k), upBoardBorder, leftBorder(k), downBoardBorder);
 		}
 
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
 				if (board[i][j] == 'x') {
-
 					g.drawLine((int) (leftBorder(j) + elementMarginRatio * squareWidth),
 							(int) (upBorder(i) + elementMarginRatio * squareHeight),
 							(int) (rightBorder(j) - elementMarginRatio * squareWidth),
@@ -155,25 +169,26 @@ class OXPanel extends JPanel {
 							(int) (upBorder(i) + elementMarginRatio * squareHeight),
 							(int) (squareWidth - 2 * elementMarginRatio * squareWidth),
 							(int) (squareHeight - 2 * elementMarginRatio * squareHeight));
+
 				}
 			}
 		}
 	}
 
-	private int leftBorder(int j) {
-		return j * squareWidth + leftBoardBorder;
+	private int leftBorder(int k) {
+		return k * squareWidth + leftBoardBorder;
 	}
 
-	private int rightBorder(int j) {
-		return (j + 1) * squareWidth + leftBoardBorder;
+	private int rightBorder(int k) {
+		return (k + 1) * squareWidth + leftBoardBorder;
 	}
 
-	private int upBorder(int i) {
-		return i * squareHeight + upBoardBorder;
+	private int upBorder(int k) {
+		return k * squareHeight + upBoardBorder;
 	}
 
-	private int downBorder(int i) {
-		return (i + 1) * squareHeight + upBoardBorder;
+	private int downBorder(int k) {
+		return (k + 1) * squareHeight + upBoardBorder;
 	}
 
 }
